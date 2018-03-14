@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+    <!-- Define a traditional camel context here -->
+    <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
+        <endpoint id="wsrec" uri="websocket://channel">
+            <property key="port" value="9292"/>
+            <property key="staticResources" value="{{staticpages}}"/>
+        </endpoint>
+        <endpoint id="wssend" uri="websocket://channel">
+            <property key="port" value="9292"/>
+            <property key="sendToAll" value="true"/>
+            <property key="staticResources" value="{{staticpages}}"/>
+        </endpoint>
+        <route id="_route1">
+            <from id="_from1" uri="timer:test?period=150"/>
+            <setBody id="_setBody1">
+                <method bean="myTransformer" method="transform"/>
+            </setBody>
+            <log id="_log1" message="sending ${body}"/>
+            <to id="_to1" uri="wssend"/>
+        </route>
+        <route id="_route2">
+            <from id="_from2" uri="wsrec"/>
+            <log id="_log2" message="received msg from clients ${body}"/>
+            <to id="_to2" uri="wssend"/>
+        </route>
+    </camelContext>
+</beans>
